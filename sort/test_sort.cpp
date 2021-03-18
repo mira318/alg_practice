@@ -1,5 +1,6 @@
 #include <iostream>
 #include "sort.h"
+#include "sort.cpp"
 //#include <alg_practice_sort/sort>
 struct TestStruct
 {
