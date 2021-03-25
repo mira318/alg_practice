@@ -36,25 +36,13 @@ static void generate(TestStruct *pts)
 
 unsigned int HashFunc(const TestStruct* instance) {
   const int prime_1 = 257;
-  const int prime_2 = 199;
-  const int prime_3 = 269;
   unsigned int key_hash = 0;
-  unsigned int value1_hash = 0;
-  unsigned int value2_hash = 0;
   int key_len = (instance->key).length();
-  int value1_len = (instance->value1).length();
-  int value2_len = (instance->value2).length();
 
   for (int i = 0; i < key_len; ++i) {
     key_hash = key_hash * prime_1 + int(instance->key[i]);
   }
-  for (int i = 0; i < value1_len; ++i) {
-    value1_hash = value1_hash * prime_2 + int(instance->value1[i]);
-  }
-  for (int i = 0; i < value2_len; ++i) {
-    value2_hash = value2_hash * prime_3 + int(instance->value2[i]);
-  }
-  return value1_hash + value2_hash + key_hash;
+  return key_hash;
 }
 
 int main() {
@@ -73,7 +61,7 @@ int main() {
   std::cout << std::endl;
   for(int i = 0; i < num_iter; ++i) {
     for(int j = 0; j < num_iter; ++j) {
-      if(i != j && hashes[i] == hashes[j]) {
+      if(i != j && i < j && hashes[i] == hashes[j]) {
         std::cout << "i = " << i << ", j = " << j << std::endl;
         std::cout << "TestStruct i: " << std::endl;
         checking_instance[i]->toString();
