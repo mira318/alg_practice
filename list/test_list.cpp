@@ -66,7 +66,6 @@ void TestListFunction()
 
   assert(single_list.getSize() == 0);
 
-  return; //пока только односвязный список
   /// тест двусвязного списка
 
   TestList list;

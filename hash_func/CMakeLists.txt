@@ -3,4 +3,4 @@ project(alg_practice)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(hash_func main.cpp)
+add_executable(hash_func hash_func.cpp)

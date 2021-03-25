@@ -12,11 +12,12 @@ project(alg_practice)
 
 include_directories(
         sort
-        hash_table
+        # hash_table
         list
+        hash_func
 )
 
 add_subdirectory(sort)
 add_subdirectory(list)
-add_subdirectory(hash_table)
+# add_subdirectory(hash_table)
 add_subdirectory(hash_func)

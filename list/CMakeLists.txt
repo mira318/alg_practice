@@ -1,11 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
-project(alg_practice C)
+project(alg_practice)
 
-set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 
-include_directories(.)
-
-add_library(list
-        list.h)
-add_executable(list-tests
-        test_list.cpp)
+add_executable(test_list test_list.cpp)
