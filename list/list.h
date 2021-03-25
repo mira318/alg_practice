@@ -154,6 +154,9 @@ namespace lab618
       leaf* it_leaf = it.getLeaf();
       if(m_pBegin == it_leaf)
       {
+        if(m_pBegin == m_pEnd) {
+          m_pEnd = it_leaf->pnext;
+        }
         m_pBegin = it_leaf->pnext;
         it.setLeafPreBegin(m_pBegin);
         delete it_leaf;
@@ -214,13 +217,6 @@ namespace lab618
       throw std::runtime_error("Iterator is not valid!");
     }
   };
-
-
-
-
-
-
-
 
   template<class T>
   class CDualLinkedList

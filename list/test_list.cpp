@@ -4,7 +4,7 @@
 #include "list.h"
 #include <string>
 
-const int ELEMENTS_COUNT = 1000;
+const int ELEMENTS_COUNT = 3; //1000
 
 struct TestStruct
 {
