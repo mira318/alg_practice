@@ -1,6 +1,8 @@
 #ifndef MEMORY_MANAGER_HEAD_H_2021_02_18
 #define MEMORY_MANAGER_HEAD_H_2021_02_18
 
+#include <iostream>
+
 namespace lab618
 {
   template <class T>
@@ -17,6 +19,24 @@ namespace lab618
       int firstFreeIndex;
       // Число заполненных ячеек
       int usedCount;
+      void ToString(int size){
+        std::cout << "pnext = " << pnext << std::endl;
+        std::cout << "firstFreeIndex = " << firstFreeIndex << std::endl;
+        std::cout << "usedCount = " << usedCount << std::endl;
+        std::cout << "size = " << size << std::endl;
+        std::cout << "as int:" << std::endl;
+        for(int i = 0; i < size; ++i) {
+          int q = *(reinterpret_cast<int*>(pnext + i * sizeof(T)));
+          std::cout << q << " ";
+        }
+        std::cout << std::endl;
+        std::cout << "as T:" << std::endl;
+        for(int i = 0; i < size; ++i) {
+          T q = *(reinterpret_cast<T*>(pnext + i * sizeof(T)));
+          q.toString();
+        }
+        std::cout << std::endl;
+      }
     };
   public:
     class CException
@@ -41,7 +61,6 @@ namespace lab618
     T* newObject()
     {
       if(m_pBlocks == nullptr) {
-        //неть надо проверить, нет ли память спереди --> сделать 2 отдельных ifa
         m_pCurrentBlk = newBlock();
       }
       if(m_pCurrentBlk->firstFreeIndex == -1) {
@@ -68,7 +87,7 @@ namespace lab618
       int next_free = *(reinterpret_cast<int*>(m_pCurrentBlk + free_index * sizeof(T)));
       m_pCurrentBlk->usedCount++;
       m_pCurrentBlk->firstFreeIndex = next_free;
-      T* t_place = reinterpret_cast<T*>(m_pCurrentBlk + free_index + sizeof (T)); //mistake should use new
+      T* t_place = reinterpret_cast<T*>(m_pCurrentBlk + free_index + sizeof (T));
       return t_place;
     }
 
@@ -81,12 +100,13 @@ namespace lab618
       bool find = false;
       while(!find && block_with_it != nullptr){
         for(int i = 0; (i < m_blkSize && !find); ++i) {
-          T* cur_t = block_with_it;
-          if(block_with_it->pdata[i] == p){
+          T* t_iter = reinterpret_cast<T*>(block_with_it + i * sizeof(T));
+          if(t_iter == p){
             it_index = i;
             find = true;
           }
         }
+        block_with_it = block_with_it->pnext;
       }
       if(block_with_it == nullptr) {
         return false;
@@ -114,11 +134,14 @@ namespace lab618
     block* newBlock()
     {
       block* new_block = new block;
-      new_block->pdata = new char[sizeof(T) * m_blkSize];
+      new_block->pdata = reinterpret_cast<T*>(new char[sizeof(T) * m_blkSize]);
       new_block->pnext = nullptr;
+      new_block->ToString(m_blkSize);
       for(int i = 0; i < m_blkSize; ++i){
-        int* place = reinterpret_cast<int*>(new_block->pdata + i * sizeof(T));
-        *place = i + 1;
+        reinterpret_cast<T*>(new_block->pdata + i * sizeof(T)) = new T;
+        int* place_int = reinterpret_cast<int*>(new_block->pdata + i * sizeof(T));
+        *place_int = i + 1;
+        new_block->ToString(m_blkSize);
       }
       int* last_place = reinterpret_cast<int*>(new_block->pdata + (m_blkSize - 1) * sizeof(T));
       *last_place = -1;
@@ -134,8 +157,11 @@ namespace lab618
       if(!m_isDeleteElementsOnDestruct && p->usedCount != 0) {
         throw CException();
       }
-      delete[] p->pdata;
-      delete p;
+      char* p_char = reinterpret_cast<char*>(p);
+      delete[] p_char;
+      delete p_char;
+      p = nullptr;
+      p_char = nullptr;
     }
 
     // Размер блока

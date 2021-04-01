@@ -17,6 +17,8 @@ struct TestStruct
   }
 };
 
+typedef lab618::CMemoryManager<TestStruct> TestManager;
+
 const char alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghigklmnopqrstuvwxyzАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя";
 const int alphabet_length = sizeof(alphabet);
 
@@ -33,8 +35,26 @@ static std::string makeRandomString(int minL = 7, int maxL = 14)
   return s;
 }
 
+static void generate(TestStruct *pts)
+{
+  pts->key = makeRandomString();
+  pts->value1 = makeRandomString();
+  pts->value2 = makeRandomString();
+}
+
 void TestAllocatorFunction()
-{}
+{
+  int block_size = 10;
+  int num_el = 100;
+  TestManager manager(block_size, true);
+  for(int i = 0; i < num_el; ++i) {
+    TestStruct ts;
+    generate(&ts);
+    TestStruct* iterator = manager.newObject();
+    iterator = &ts;
+  }
+  manager.clear();
+}
 
 int main() {
   TestAllocatorFunction();
