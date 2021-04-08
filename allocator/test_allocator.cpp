@@ -13,7 +13,7 @@ struct TestStruct
   std::string value1;
   std::string value2;
   void toString(){
-    std::cout << key << " " << value1 << " " << value2;
+    std::cout << key << " " << value1 << " " << value2 << std::endl;
   }
 };
 
@@ -44,16 +44,16 @@ static void generate(TestStruct *pts)
 
 void TestAllocatorFunction()
 {
-  int block_size = 10;
-  int num_el = 100;
+  int block_size = 3;
+  int num_el = 48;
   TestManager manager(block_size, true);
   for(int i = 0; i < num_el; ++i) {
     TestStruct ts;
     generate(&ts);
     TestStruct* iterator = manager.newObject();
-    iterator = &ts;
+    *iterator = ts;
   }
-  manager.clear();
+  manager.ToString();
 }
 
 int main() {

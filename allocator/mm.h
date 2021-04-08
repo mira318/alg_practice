@@ -2,6 +2,7 @@
 #define MEMORY_MANAGER_HEAD_H_2021_02_18
 
 #include <iostream>
+#include <cstring>
 
 namespace lab618
 {
@@ -26,14 +27,23 @@ namespace lab618
         std::cout << "size = " << size << std::endl;
         std::cout << "as int:" << std::endl;
         for(int i = 0; i < size; ++i) {
-          int q = *(reinterpret_cast<int*>(pnext + i * sizeof(T)));
+          int q = *(reinterpret_cast<int*>(pdata + i * sizeof(T)));
           std::cout << q << " ";
+        }
+        bool is_t[size];
+        memset(is_t, true, size);
+        int not_t = firstFreeIndex;
+        while(not_t != -1) {
+          is_t[not_t] = false;
+          not_t = *(reinterpret_cast<int*>(pdata + not_t * sizeof(T)));
         }
         std::cout << std::endl;
         std::cout << "as T:" << std::endl;
         for(int i = 0; i < size; ++i) {
-          T q = *(reinterpret_cast<T*>(pnext + i * sizeof(T)));
-          q.toString();
+          if(is_t[i]) {
+            T q = *(reinterpret_cast<T*>(pdata + i * sizeof(T)));
+            q.toString();
+          }
         }
         std::cout << std::endl;
       }
@@ -61,7 +71,8 @@ namespace lab618
     T* newObject()
     {
       if(m_pBlocks == nullptr) {
-        m_pCurrentBlk = newBlock();
+        m_pBlocks = newBlock();
+        m_pCurrentBlk = m_pBlocks;
       }
       if(m_pCurrentBlk->firstFreeIndex == -1) {
         bool find = false;
@@ -84,28 +95,34 @@ namespace lab618
         }
       }
       int free_index = m_pCurrentBlk->firstFreeIndex;
-      int next_free = *(reinterpret_cast<int*>(m_pCurrentBlk + free_index * sizeof(T)));
+      int next_free = *(reinterpret_cast<int*>(m_pCurrentBlk->pdata + free_index * sizeof(T)));
       m_pCurrentBlk->usedCount++;
       m_pCurrentBlk->firstFreeIndex = next_free;
-      T* t_place = reinterpret_cast<T*>(m_pCurrentBlk + free_index + sizeof (T));
-      return t_place;
+      memset(reinterpret_cast<char*>(m_pCurrentBlk->pdata + free_index * sizeof(T)), 0, sizeof(T));
+      ::new(reinterpret_cast<char*>(m_pCurrentBlk->pdata + free_index * sizeof(T))) T;
+      return reinterpret_cast<T*>(m_pCurrentBlk->pdata + free_index * sizeof(T));
     }
 
     // Освободить элемент в менеджере
 
     bool deleteObject(T* p)
     {
+      /* перебрать блок и найти по-умному через сравнения*/
       block* block_with_it = m_pBlocks;
       int it_index;
       bool find = false;
       while(!find && block_with_it != nullptr){
-        for(int i = 0; (i < m_blkSize && !find); ++i) {
-          T* t_iter = reinterpret_cast<T*>(block_with_it + i * sizeof(T));
-          if(t_iter == p){
-            it_index = i;
-            find = true;
+        if(p <= reinterpret_cast<T*>(block_with_it->pdata) &&
+            p >= reinterpret_cast<T*>(block_with_it->pdata + (m_blkSize - 1) * sizeof(T))) {
+          for(int i = 0; (i < m_blkSize && !find); ++i) {
+            T* t_iter = reinterpret_cast<T*>(block_with_it->pdata + i * sizeof(T));
+            if(t_iter == p){
+              it_index = i;
+              find = true;
+            }
           }
         }
+
         block_with_it = block_with_it->pnext;
       }
       if(block_with_it == nullptr) {
@@ -113,6 +130,8 @@ namespace lab618
       }
       int last_free_index = block_with_it->firstFreeIndex;
       block_with_it->firstFreeIndex = it_index;
+      p->~T();
+      memset(reinterpret_cast<char*>(p), 0, sizeof(T));
       block_with_it->pdata[it_index] = last_free_index;
       block_with_it->usedCount--;
       return true;
@@ -128,6 +147,20 @@ namespace lab618
         cur = next;
       }
     }
+
+    void ToString() {
+      std::cout << "m_isDeleteElementsOnDestruct = " << m_isDeleteElementsOnDestruct << std::endl;
+      std::cout << "m_blkSize = " << m_blkSize << std::endl;
+      std::cout << "m_pBlocks = " << m_pBlocks << std::endl;
+      std::cout << "m_pCurrentBlk = " << m_pCurrentBlk << std::endl;
+      std::cout << "=======blocks=======" << std::endl;
+
+      block* cur_blk = m_pBlocks;
+      while(cur_blk != nullptr) {
+        cur_blk->ToString(m_blkSize);
+        cur_blk = cur_blk->pnext;
+      }
+    }
   private:
 
     // Создать новый блок данных, применяется в newObject
@@ -136,12 +169,9 @@ namespace lab618
       block* new_block = new block;
       new_block->pdata = reinterpret_cast<T*>(new char[sizeof(T) * m_blkSize]);
       new_block->pnext = nullptr;
-      new_block->ToString(m_blkSize);
       for(int i = 0; i < m_blkSize; ++i){
-        reinterpret_cast<T*>(new_block->pdata + i * sizeof(T)) = new T;
         int* place_int = reinterpret_cast<int*>(new_block->pdata + i * sizeof(T));
         *place_int = i + 1;
-        new_block->ToString(m_blkSize);
       }
       int* last_place = reinterpret_cast<int*>(new_block->pdata + (m_blkSize - 1) * sizeof(T));
       *last_place = -1;
@@ -157,11 +187,20 @@ namespace lab618
       if(!m_isDeleteElementsOnDestruct && p->usedCount != 0) {
         throw CException();
       }
-      char* p_char = reinterpret_cast<char*>(p);
-      delete[] p_char;
-      delete p_char;
-      p = nullptr;
-      p_char = nullptr;
+      bool is_t[m_blkSize];
+      memset(is_t, true, m_blkSize);
+      int not_t = p->firstFreeIndex;
+      while(not_t != -1) {
+        is_t[not_t] = false;
+        not_t = *(reinterpret_cast<int*>(p->pdata + not_t * sizeof(T)));
+      }
+      for(int i = 0; i < m_blkSize; ++i) {
+        if(is_t[i]){
+          reinterpret_cast<T*>(p->pdata + i * sizeof(T))->~T();
+        }
+      }
+      delete[] reinterpret_cast<char*>(p->pdata);
+      delete p;
     }
 
     // Размер блока
@@ -172,7 +211,7 @@ namespace lab618
     block* m_pCurrentBlk;
     // Удалять ли элементы при освобождении
     bool m_isDeleteElementsOnDestruct;
-  };
+  }; // memory manager
 }; // namespace lab618
 
 #endif // #define MEMORY_MANAGER_HEAD_H_2021_02_18
