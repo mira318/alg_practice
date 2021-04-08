@@ -46,7 +46,7 @@ unsigned int HashFunc(const TestStruct* instance) {
 }
 
 int main() {
-  int num_iter = 10000000;
+  int num_iter = 100000;
   unsigned int hashes[num_iter];
   TestStruct** checking_instance = new TestStruct*[num_iter];
   for(int i = 0; i < num_iter; ++i) {

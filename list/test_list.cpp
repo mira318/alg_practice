@@ -1,7 +1,8 @@
 #include <iostream>
 #include <assert.h>
 
-#include "list.h"
+//#include "list.h"
+#include <list.h>
 #include <string>
 
 const int ELEMENTS_COUNT = 1000;

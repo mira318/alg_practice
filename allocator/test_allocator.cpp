@@ -1,8 +1,8 @@
-#include "mm.h"
+//#include "mm.h"
+#include <mm.h>
 #include <iostream>
 #include <assert.h>
 
-#include "list.h"
 #include <string>
 
 const int ELEMENTS_COUNT = 1000;
@@ -44,8 +44,8 @@ static void generate(TestStruct *pts)
 
 void TestAllocatorFunction()
 {
-  int block_size = 3;
-  int num_el = 48;
+  int block_size = 42;
+  int num_el = 47;
   TestManager manager(block_size, true);
   for(int i = 0; i < num_el; ++i) {
     TestStruct ts;
