@@ -372,8 +372,15 @@ namespace lab618
         throw std::runtime_error("List is empty");
       }
 
-      T tmp = tmp->data;
+      T tmp = m_pEnd->data;
       leaf* newEnd = m_pEnd->pprev;
+
+      if(newEnd != 0) {
+        newEnd->pnext = 0;
+      } else {
+        m_pBegin = 0;
+      }
+
       delete m_pEnd;
       m_pEnd = newEnd;
       return tmp;
@@ -400,8 +407,11 @@ namespace lab618
 
       T tmp = m_pBegin->data;
       leaf* newBegin = m_pBegin->pnext;
+
       if (newBegin != 0) {
         newBegin->pprev = 0;
+      } else {
+        m_pEnd = 0;
       }
 
       delete m_pBegin;

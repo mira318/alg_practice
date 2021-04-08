@@ -116,6 +116,19 @@ void TestListFunction()
   }
   assert(list.getSize() == 0);
 
+
+  for (int i = 0; i < ELEMENTS_COUNT; ++i)
+  {
+    TestStruct ts;
+    generate(&ts);
+    list.pushFront(ts);
+  }
+  assert(list.getSize() == ELEMENTS_COUNT);
+  for (int i = 0; i < ELEMENTS_COUNT; ++i)
+  {
+    list.popBack();
+  }
+  assert(list.getSize() == 0);
 }
 
 int main()
