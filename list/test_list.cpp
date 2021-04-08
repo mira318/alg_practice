@@ -5,7 +5,7 @@
 #include <list.h>
 #include <string>
 
-const int ELEMENTS_COUNT = 1000;
+const int ELEMENTS_COUNT = 10;
 
 struct TestStruct
 {
@@ -67,6 +67,22 @@ void TestListFunction()
 
   assert(single_list.getSize() == 0);
 
+
+
+  for (int i = 0; i < ELEMENTS_COUNT; ++i)
+  {
+    TestStruct ts;
+    generate(&ts);
+    single_list.pushFront(ts);
+  }
+  assert(single_list.getSize() == ELEMENTS_COUNT);
+  for (int i = 0; i < ELEMENTS_COUNT; ++i)
+  {
+    single_list.popFront();
+  }
+  assert(single_list.getSize() == 0);
+
+
   /// тест двусвязного списка
 
   TestList list;
@@ -85,6 +101,21 @@ void TestListFunction()
     TestStruct ts = *it;
     list.erase(it);
   }
+
+
+  for (int i = 0; i < ELEMENTS_COUNT; ++i)
+  {
+    TestStruct ts;
+    generate(&ts);
+    list.pushFront(ts);
+  }
+  assert(list.getSize() == ELEMENTS_COUNT);
+  for (int i = 0; i < ELEMENTS_COUNT; ++i)
+  {
+    list.popFront();
+  }
+  assert(list.getSize() == 0);
+
 }
 
 int main()

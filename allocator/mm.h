@@ -172,6 +172,7 @@ namespace lab618
       for(int i = 0; i < m_blkSize; ++i){
         int* place_int = reinterpret_cast<int*>(new_block->pdata + i * sizeof(T));
         *place_int = i + 1;
+        new_block->ToString();
       }
       int* last_place = reinterpret_cast<int*>(new_block->pdata + (m_blkSize - 1) * sizeof(T));
       *last_place = -1;

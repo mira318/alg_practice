@@ -218,6 +218,14 @@ namespace lab618
     }
   };
 
+
+
+
+
+
+
+
+
   template<class T>
   class CDualLinkedList
   {
@@ -392,7 +400,9 @@ namespace lab618
 
       T tmp = m_pBegin->data;
       leaf* newBegin = m_pBegin->pnext;
-      newBegin->pprev = 0;
+      if (newBegin != 0) {
+        newBegin->pprev = 0;
+      }
 
       delete m_pBegin;
       m_pBegin = newBegin;
@@ -445,7 +455,7 @@ namespace lab618
         delete it_leaf;
         return;
       }
-      if(it == m_pBegin) {
+      if(it_leaf == m_pBegin) {
         leaf* newBegin = m_pBegin->pnext;
         m_pBegin = newBegin;
       }
@@ -488,7 +498,7 @@ namespace lab618
     }
 
   private:
-    leaf* m_pBegin, *m_pEnd;
+    leaf *m_pBegin, *m_pEnd;
   };
 };
 #endif //#ifndef TEMPLATES_LIST_2021_02_11
