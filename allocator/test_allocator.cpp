@@ -47,7 +47,7 @@ void TestAllocatorFunction()
   int block_size = 42;
   int num_el = 47;
   TestManager manager = TestManager (block_size, true);
-  for(int i = 0; i < num_el; ++i) {
+  /*for(int i = 0; i < num_el; ++i) {
     TestStruct ts;
     generate(&ts);
     TestStruct* iterator = manager.newObject();
