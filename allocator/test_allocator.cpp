@@ -44,7 +44,7 @@ static void generate(TestStruct *pts)
 
 void TestAllocatorFunction()
 {
-  int block_size = 42;
+  /*int block_size = 42;
   int num_el = 47;
   TestManager manager(block_size, true);
   for(int i = 0; i < num_el; ++i) {
@@ -53,7 +53,7 @@ void TestAllocatorFunction()
     TestStruct* iterator = manager.newObject();
     *iterator = ts;
   }
-  manager.ToString();
+  manager.ToString();*/
 }
 
 int main() {

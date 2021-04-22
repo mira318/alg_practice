@@ -24,7 +24,7 @@ const char alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghigklmnopqrstuvwxyz–ê–
 const int alphabet_length = sizeof(alphabet);
 
 
-static std::string makeRandomString(int minL = 7, int maxL = 14)
+static std::string makeRandomString(int minL = 1, int maxL = 100)
 {
   int length = rand() % maxL + minL;
   std::string s;

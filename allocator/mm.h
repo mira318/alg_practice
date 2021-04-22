@@ -52,9 +52,7 @@ namespace lab618
     class CException
     {
     public:
-      CException()
-      {
-      }
+      CException(){}
     };
 
   public:
