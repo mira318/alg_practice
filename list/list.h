@@ -431,7 +431,13 @@ namespace lab618
 
       if(it_leaf == m_pBegin) {
         leaf* newBegin = m_pBegin->pnext;
+        if(newBegin != 0) {
+          newBegin->pprev = 0;
+        }
         it.setLeafPreBegin(newBegin);
+        if(m_pBegin == m_pEnd) { // если это ещё и единственный элемент списка
+          m_pEnd = newBegin;
+        }
         m_pBegin = newBegin;
         delete it_leaf;
         it_leaf = 0;
@@ -440,9 +446,17 @@ namespace lab618
 
       if(it_leaf == m_pEnd) {
         leaf* newEnd = m_pEnd->pprev;
+        if(newEnd != 0) {
+          newEnd->pnext = 0;
+        }
         m_pEnd = newEnd;
       }
+
       leaf* prev = it_leaf->pprev;
+      prev->pnext = it_leaf->pnext;
+      leaf* next = it_leaf->pnext;
+      next->pprev = prev;
+
       delete it_leaf;
       it_leaf = 0;
       it.setLeaf(prev);

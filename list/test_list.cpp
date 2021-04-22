@@ -5,7 +5,7 @@
 #include <list.h>
 #include <string>
 
-const int ELEMENTS_COUNT = 1000;
+const int ELEMENTS_COUNT = 4;
 
 struct TestStruct
 {
@@ -97,11 +97,14 @@ void TestListFunction()
 
   assert(list.getSize() == ELEMENTS_COUNT);
 
+  int t = 0;
   for (TestList::CIterator it = list.begin(); it.isValid(); ++it)
   {
+    t++;
     it.getLeaf();
     TestStruct ts = *it;
     list.erase(it);
+    assert(list.getSize() == ELEMENTS_COUNT - t);
   }
 
   assert(list.getSize() == 0);
@@ -130,10 +133,9 @@ void TestListFunction()
   for (int i = 0; i < ELEMENTS_COUNT; ++i)
   {
     list.popBack();
+    assert(list.getSize() == ELEMENTS_COUNT - i - 1);
   }
   assert(list.getSize() == 0);
-
-
 
   for (int i = 0; i < ELEMENTS_COUNT; ++i)
   {
@@ -148,6 +150,28 @@ void TestListFunction()
     list.eraseAndNext(i);
   }
   assert(list.getSize() == 0);
+
+  for(int i = 0; i < ELEMENTS_COUNT; ++i)
+  {
+    TestStruct ts;
+    generate(&ts);
+    list.pushBack(ts);
+    assert(list.getSize() == i + 1);
+  }
+
+  t = 0;
+  TestList::CIterator it = list.begin();
+  while(it.isValid())
+  {
+    t++;
+    if(t % 3 == 0) {
+      it.getLeaf();
+      TestStruct ts = *it;
+      list.erase(it);
+      assert(list.getSize() == ELEMENTS_COUNT - (t / 3));
+    }
+    ++it;
+  }
 }
 
 int main()
