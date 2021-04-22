@@ -453,10 +453,15 @@ namespace lab618
       }
 
       leaf* prev = it_leaf->pprev;
-      prev->pnext = it_leaf->pnext;
       leaf* next = it_leaf->pnext;
-      next->pprev = prev;
 
+      assert(it_leaf != 0);
+      if(next != 0) {
+        next->pprev = prev;
+      }
+      if(prev != 0) {
+        prev->pnext = next;
+      }
       delete it_leaf;
       it_leaf = 0;
       it.setLeaf(prev);
