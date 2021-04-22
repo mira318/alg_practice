@@ -248,7 +248,7 @@ namespace lab618
 
       ~CIterator() {}
 
-      CIterator& operator = (const CIterator&  src)
+      CIterator& operator = (const CIterator& src)
       {
         m_pBegin = src.m_pBegin;
         m_pCurrent = src.m_pCurrent;
@@ -258,7 +258,7 @@ namespace lab618
 
       bool operator != (const CIterator&  it) const
       {
-        return (m_pCurrent != it.m_pCurrent) && (m_pEnd != it.m_pEnd) && (m_pBegin != it.m_pBegin);
+        return (m_pCurrent != it.m_pCurrent) || (m_pEnd != it.m_pEnd) || (m_pBegin != it.m_pBegin);
       }
 
       void operator++()
@@ -279,11 +279,9 @@ namespace lab618
         if (m_pEnd != 0) {
           m_pCurrent = m_pEnd;
           m_pEnd = 0;
-        } else {
-          if (m_pCurrent != 0) {
-            m_pCurrent = m_pCurrent->pprev;
-          }
+          return;
         }
+        m_pCurrent = m_pCurrent->pprev;
       }
 
       T& getData()
@@ -436,6 +434,7 @@ namespace lab618
         it.setLeafPreBegin(newBegin);
         m_pBegin = newBegin;
         delete it_leaf;
+        it_leaf = 0;
         return;
       }
 
@@ -445,33 +444,50 @@ namespace lab618
       }
       leaf* prev = it_leaf->pprev;
       delete it_leaf;
+      it_leaf = 0;
       it.setLeaf(prev);
     }
 
     // изменяет состояние итератора. выставляет следующую позицию.
     void eraseAndNext(CIterator& it)
     {
-      if(m_pBegin == 0) {
+      if(m_pBegin == 0) { // начало листа
         throw std::runtime_error("List is empty");
       }
+
       leaf* it_leaf = it.getLeaf();
-      if(it_leaf == 0) {
+      if(it_leaf == 0) { // попали в prebegin, postend или вообще неизвестно куда
         throw std::runtime_error("Iterator is not valid");
       }
+
       if(it_leaf == m_pEnd) {
-        leaf* newEnd = m_pEnd->pprev;
-        it.setLeafPostEnd(it_leaf);
+        leaf* newEnd = m_pEnd->pprev; // может случиться newEnd = 0
+        if(newEnd != 0) {
+          newEnd->pnext = 0;
+        }
+        if(m_pEnd == m_pBegin) { // случай, когда это ещё и последний элемент листа
+          m_pBegin = newEnd;
+        }
+
         m_pEnd = newEnd;
+        it.setLeafPostEnd(it_leaf); // после конца есть следующий - postend, но он невалидный
         delete it_leaf;
+        it_leaf = 0;
         return;
       }
+
       if(it_leaf == m_pBegin) {
         leaf* newBegin = m_pBegin->pnext;
+        if(newBegin != 0) {
+          newBegin->pprev = 0;
+        }
         m_pBegin = newBegin;
       }
+
       leaf* next = it_leaf->pnext;
-      delete it_leaf;
       it.setLeaf(next);
+      delete it_leaf;
+      it_leaf = 0;
     }
 
     int getSize()

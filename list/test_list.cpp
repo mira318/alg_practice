@@ -5,7 +5,7 @@
 #include <list.h>
 #include <string>
 
-const int ELEMENTS_COUNT = 4;
+const int ELEMENTS_COUNT = 1000;
 
 struct TestStruct
 {
@@ -143,7 +143,7 @@ void TestListFunction()
   }
   assert(list.getSize() == ELEMENTS_COUNT);
 
-  for (TestList::CIterator i = list.begin(); i.isValid(); i.setLeaf(i.getLeaf()->pnext))
+  for (TestList::CIterator i = list.begin(); i.isValid(); ) // сам переставит итератор
   {
     list.eraseAndNext(i);
   }
