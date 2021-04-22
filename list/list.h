@@ -443,9 +443,9 @@ namespace lab618
         leaf* newEnd = m_pEnd->pprev;
         m_pEnd = newEnd;
       }
-      it_leaf--;
+      leaf* prev = it_leaf->pprev;
       delete it_leaf;
-      it_leaf = 0;
+      it.setLeaf(prev);
     }
 
     // изменяет состояние итератора. выставляет следующую позицию.
@@ -469,9 +469,9 @@ namespace lab618
         leaf* newBegin = m_pBegin->pnext;
         m_pBegin = newBegin;
       }
-      it_leaf++;
+      leaf* next = it_leaf->pnext;
       delete it_leaf;
-      it_leaf = 0;
+      it.setLeaf(next);
     }
 
     int getSize()
