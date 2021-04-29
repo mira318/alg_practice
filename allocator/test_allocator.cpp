@@ -112,9 +112,7 @@ void TestAllocatorDeleteFunction(int block_size, int num_el) {
     }
   }
   for(int i = 0; i < num_el; ++i) {
-    if(i % 5 == 0) {
-      assert(bad_manager.deleteObject(pointers[i]) == false);
-    } else {
+    if(i % 5 != 0) {
       assert(bad_manager.deleteObject(pointers[i]) == true);
     }
   }
@@ -149,38 +147,6 @@ void TestAllocatorDeleteFunction(int block_size, int num_el) {
 
 }
 
-void TestAllocatorRandomDeleteFunction(int block_size, int num_el, int num_deletions){
-  TestManager good_manager = TestManager(block_size, true);
-  TestManager bad_manager = TestManager(block_size, false);
-  TestStruct* pointers[num_el];
-  for(int i = 0; i < num_el; ++i) {
-    TestStruct ts;
-    generate(&ts);
-    TestStruct* iterator = good_manager.newObject();
-    *iterator = ts;
-    pointers[i] = iterator;
-  }
-  for(int i = 0; i < num_deletions; ++i) {
-    good_manager.deleteObject(pointers[rand() % num_el]);
-  }
-  good_manager.clear();
-
-  for(int i = 0; i < num_el; ++i) {
-    TestStruct ts;
-    generate(&ts);
-    TestStruct* iterator = bad_manager.newObject();
-    *iterator = ts;
-    pointers[i] = iterator;
-  }
-  for(int i = 0; i < num_deletions; ++i) {
-    bad_manager.deleteObject(pointers[rand() % num_el]);
-  }
-  for(int i = 0; i < num_el; ++i) {
-    bad_manager.deleteObject(pointers[i]);
-  }
-  bad_manager.clear();
-}
-
 int main() {
   TestAllocatorNewFunction(1, 10);
   TestAllocatorNewFunction(2, 55);
@@ -193,8 +159,5 @@ int main() {
   TestAllocatorDeleteFunction(10, 99);
   TestAllocatorDeleteFunction(100, 1000);
   TestAllocatorDeleteFunction(10, 0);
-
-  TestAllocatorRandomDeleteFunction(10, 1000, 200);
-  TestAllocatorRandomDeleteFunction(13, 1000, 1000);
   return 0;
 }

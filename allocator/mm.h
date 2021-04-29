@@ -125,13 +125,8 @@ namespace lab618
       while(!find && block_with_it != 0){
         if(p >= reinterpret_cast<T*>(block_with_it->pdata) &&
             p <= reinterpret_cast<T*>(block_with_it->pdata + m_blkSize - 1)) {
-          for(int i = 0; (i < m_blkSize && !find); ++i) {
-            T* t_iter = reinterpret_cast<T*>(block_with_it->pdata + i);
-            if(t_iter == p){
-              it_index = i;
-              find = true;
-            }
-          }
+          it_index = p - block_with_it->pdata;
+          find = true;
         }
         if(!find){
           block_with_it = block_with_it->pnext;
@@ -140,17 +135,7 @@ namespace lab618
       if(block_with_it == 0) { // перебрали все блоки и не нашли, значит такого элемента нет
         return false;
       }
-      // Теперь в block_with_it лежит указатель на блок с элементом, но он может быть уже удалён
-      bool* is_t = new bool[m_blkSize];
-      memset(is_t, true, m_blkSize);
-      int free_index = block_with_it->firstFreeIndex;
-      while(free_index != -1) {
-        is_t[free_index] = false;
-        free_index = *(reinterpret_cast<int*>(block_with_it->pdata + free_index));
-      }
-      if(!is_t[it_index]) {
-        return false;
-      }
+      // Теперь в block_with_it лежит указатель на блок с элементом, но он может быть уже удалён - тогда менеджер упадёт
       // удаляем сам элемент
       p->~T();
       memset(reinterpret_cast<void*>(block_with_it->pdata + it_index),0, sizeof(T));
