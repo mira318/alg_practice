@@ -123,8 +123,7 @@ namespace lab618
       int it_index;
       bool find = false;
       while(!find && block_with_it != 0){
-        if(p >= reinterpret_cast<T*>(block_with_it->pdata) &&
-            p <= reinterpret_cast<T*>(block_with_it->pdata + m_blkSize - 1)) {
+        if(p >= block_with_it->pdata && p <= (block_with_it->pdata + m_blkSize - 1)) {
           it_index = p - block_with_it->pdata;
           find = true;
         }
