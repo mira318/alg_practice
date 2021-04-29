@@ -27,16 +27,16 @@ namespace lab618
         std::cout << "size = " << size << std::endl;
         std::cout << "as int:" << std::endl;
         for(int i = 0; i < size; ++i) {
-          int q = *(reinterpret_cast<int*>(reinterpret_cast<char*>(pdata) + i * sizeof(T)));
+          int q = *(reinterpret_cast<int*>(pdata + i));
           std::cout << q << " ";
         }
         std::cout << std::endl;
-        bool is_t[size];
+        bool* is_t = new bool[size];
         int not_t = firstFreeIndex;
         memset(is_t, true, size);
         while(not_t != -1) {
           is_t[not_t] = false;
-          not_t = *(reinterpret_cast<int*>(reinterpret_cast<char*>(pdata) + not_t * sizeof(T)));
+          not_t = *(reinterpret_cast<int*>(pdata + not_t));
         }
         std::cout << std::endl << "is_t:" << std::endl;
         for(int i = 0; i < size; ++i) {
@@ -46,7 +46,7 @@ namespace lab618
         std::cout << "as T:" << std::endl;
         for(int i = 0; i < size; ++i) {
           if(is_t[i]) {
-            T q = *(reinterpret_cast<T*>(reinterpret_cast<char*>(pdata) + i * sizeof(T)));
+            T q = *(reinterpret_cast<T*>(pdata + i));
             q.toString();
           } else {
             std::cout << "no T" << std::endl;
@@ -104,13 +104,12 @@ namespace lab618
       }
       // После всего сделанного m_pCurrent точно содержит указатель на блок, где есть свободное место
       int free_index = m_pCurrentBlk->firstFreeIndex; // точно >= 0
-      int next_free = *(reinterpret_cast<int*>(reinterpret_cast<char*>(m_pCurrentBlk->pdata) + free_index * sizeof(T)));
+      int next_free = *(reinterpret_cast<int*>(m_pCurrentBlk->pdata + free_index));
       m_pCurrentBlk->usedCount++;
       m_pCurrentBlk->firstFreeIndex = next_free;
-      memset(reinterpret_cast<void*>(reinterpret_cast<char*>(m_pCurrentBlk->pdata) + free_index * sizeof(T)),
-             0, sizeof(T));
-      ::new(reinterpret_cast<void*>(reinterpret_cast<char*>(m_pCurrentBlk->pdata) + free_index * sizeof(T))) T;
-      return reinterpret_cast<T*>(reinterpret_cast<char*>(m_pCurrentBlk->pdata) + free_index * sizeof(T));
+      memset(reinterpret_cast<void*>(m_pCurrentBlk->pdata + free_index),0, sizeof(T));
+      ::new(reinterpret_cast<void*>(m_pCurrentBlk->pdata + free_index)) T;
+      return reinterpret_cast<T*>(m_pCurrentBlk->pdata + free_index);
     }
 
     // Освободить элемент в менеджере
@@ -123,9 +122,9 @@ namespace lab618
       bool find = false;
       while(!find && block_with_it != 0){
         if(p >= reinterpret_cast<T*>(block_with_it->pdata) &&
-            p <= reinterpret_cast<T*>(reinterpret_cast<char*>(block_with_it->pdata) + (m_blkSize - 1) * sizeof(T))) {
+            p <= reinterpret_cast<T*>(block_with_it->pdata + m_blkSize - 1)) {
           for(int i = 0; (i < m_blkSize && !find); ++i) {
-            T* t_iter = reinterpret_cast<T*>(reinterpret_cast<char*>(block_with_it->pdata) + i * sizeof(T));
+            T* t_iter = reinterpret_cast<T*>(block_with_it->pdata + i);
             if(t_iter == p){
               it_index = i;
               find = true;
@@ -140,27 +139,25 @@ namespace lab618
         return false;
       }
       // Теперь в block_with_it лежит указатель на блок с элементом, но он может быть уже удалён
-      bool is_t[m_blkSize];
+      bool* is_t = new bool[m_blkSize];
       memset(is_t, true, m_blkSize);
       int free_index = block_with_it->firstFreeIndex;
       while(free_index != -1) {
         is_t[free_index] = false;
-        free_index = *(reinterpret_cast<int*>(reinterpret_cast<char*>(block_with_it->pdata) + free_index * sizeof(T)));
+        free_index = *(reinterpret_cast<int*>(block_with_it->pdata + free_index));
       }
       if(!is_t[it_index]) {
         return false;
       }
       // удаляем сам элемент
       p->~T();
-      memset(reinterpret_cast<void*>(reinterpret_cast<char*>(block_with_it->pdata) + it_index * sizeof(T)),
-             0, sizeof(T));
+      memset(reinterpret_cast<void*>(block_with_it->pdata + it_index),0, sizeof(T));
       block_with_it->usedCount--;
 
       // Переставляем индексы: индекс новой свободной ячейки становится в начало последовательности
       int was_free_index = block_with_it->firstFreeIndex;
       block_with_it->firstFreeIndex = it_index;
-      int* place_for_old_index = reinterpret_cast<int*>(reinterpret_cast<char*>(block_with_it->pdata) +
-                                                    it_index * sizeof(T));
+      int* place_for_old_index = reinterpret_cast<int*>(block_with_it->pdata + it_index);
       *place_for_old_index = was_free_index;
       return true; // вернули, что удалили успешно
     }
@@ -199,10 +196,10 @@ namespace lab618
       block* new_block = new block;
       new_block->pdata = reinterpret_cast<T*>(new char[sizeof(T) * m_blkSize]);
       for(int i = 0; i < m_blkSize; ++i){
-        int* place_int = reinterpret_cast<int*>(reinterpret_cast<char*>(new_block->pdata) + i * sizeof(T));
+        int* place_int = reinterpret_cast<int*>(new_block->pdata + i);
         *place_int = i + 1;
       }
-      int* last_place = reinterpret_cast<int*>(reinterpret_cast<char*>(new_block->pdata) + (m_blkSize - 1) * sizeof(T));
+      int* last_place = reinterpret_cast<int*>(new_block->pdata + m_blkSize - 1);
       *last_place = -1;
       new_block->firstFreeIndex = 0;
       new_block->usedCount = 0;
@@ -217,16 +214,16 @@ namespace lab618
       if(!m_isDeleteElementsOnDestruct && p->usedCount != 0) {
         throw("You have to delete all elements!");
       }
-      bool is_t[m_blkSize];
+      bool* is_t = new bool[m_blkSize];
       memset(is_t, true, m_blkSize);
       int not_t = p->firstFreeIndex;
       while(not_t != -1) {
         is_t[not_t] = false;
-        not_t = *(reinterpret_cast<int*>(reinterpret_cast<char*>(p->pdata) + not_t * sizeof(T)));
+        not_t = *(reinterpret_cast<int*>(p->pdata + not_t));
       }
       for(int i = 0; i < m_blkSize; ++i) {
         if(is_t[i]){
-          reinterpret_cast<T*>(reinterpret_cast<char*>(p->pdata) + i * sizeof(T))->~T();
+          reinterpret_cast<T*>(p->pdata + i)->~T();
         }
       }
       delete[] reinterpret_cast<char*>(p->pdata);
