@@ -106,7 +106,6 @@ void TestAllocatorDeleteFunction(int block_size, int num_el) {
     *iterator = ts;
     pointers[i] = iterator;
   }
-
   for(int i = 0; i < num_el; ++i) {
     if(i % 5 == 0){
       bad_manager.deleteObject(pointers[i]);

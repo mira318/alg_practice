@@ -1,11 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
-project(alg_practice C)
+project(alg_practice)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
-include_directories(.)
+add_executable(hash_table hash_test.cpp)
 
-add_library(hash
-        hash.h)
-add_executable(hash_table
-        hash_test.cpp)

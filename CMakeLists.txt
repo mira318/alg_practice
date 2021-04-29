@@ -20,6 +20,6 @@ include_directories(
 
 add_subdirectory(sort)
 add_subdirectory(list)
-# add_subdirectory(hash_table)
+add_subdirectory(hash_table)
 add_subdirectory(hash_func)
 add_subdirectory(allocator)

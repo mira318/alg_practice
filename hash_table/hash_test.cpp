@@ -1,4 +1,5 @@
-//
-// Created by irene on 11.03.2021.
-//
+#include <hash.h>
+int main(){
+  return 0;
+}
 

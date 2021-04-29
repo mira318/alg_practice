@@ -53,6 +53,8 @@ namespace lab618
           }
         }
         std::cout << std::endl;
+        delete[] is_t;
+        is_t = 0;
       }
     };
   public:
@@ -166,13 +168,16 @@ namespace lab618
     void clear()
     {
       block* cur = m_pBlocks;
+      bool* is_t = new bool[m_blkSize];
       while(cur != 0) {
         block* next = cur->pnext;
-        deleteBlock(cur); //вот эта функция зависит от m_isDeleteElementOnDestruct
+        deleteBlock(cur, is_t); //вот эта функция зависит от m_isDeleteElementOnDestruct
         cur = next;
       }
       m_pBlocks = 0;
       m_pCurrentBlk = 0;
+      delete[] is_t;
+      is_t = 0;
     }
 
     void ToString() {
@@ -209,12 +214,11 @@ namespace lab618
 
     // Освободить память блока данных. Применяется в clear
     // Завасит от m_isDeleteElementOnDestruct
-    void deleteBlock(block *p)
+    void deleteBlock(block *p, bool* is_t)
     {
       if(!m_isDeleteElementsOnDestruct && p->usedCount != 0) {
         throw("You have to delete all elements!");
       }
-      bool* is_t = new bool[m_blkSize];
       memset(is_t, true, m_blkSize);
       int not_t = p->firstFreeIndex;
       while(not_t != -1) {
