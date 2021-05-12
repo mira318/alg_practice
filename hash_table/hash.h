@@ -58,9 +58,7 @@ namespace lab618
     class CMemoryException
     {
     public:
-      CMemoryException()
-      {
-      }
+      CMemoryException(){}
     };
 
   public:
@@ -69,21 +67,56 @@ namespace lab618
     Размер Хеш таблицы реализуем жестко — изменение размера таблицы в зависимости от числа элементов в контейнере не требуется.
     Все создаваемые листики списков разрешения коллизий храним в менеджере памяти.
     */
-    CHash(int hashTableSize, int default_block_size)
-    {
+    CHash(int hashTableSize, int default_block_size): m_tableSize(hashTableSize),
+        m_Memory(CMemoryManager<leaf>(default_block_size, false)) {
+      m_pTable = new leaf*[m_tableSize];
+      for(int i = 0; i < m_tableSize; ++i) {
+        m_pTable[i] = 0;
+      }
     }
     /**
     Деструктор. Должен освобождать всю выделенную память
     */
-    virtual ~CHash()
-    {
+    virtual ~CHash() {
+      clear();
+      m_Memory.clear();
+      delete[] m_pTable;
+      m_pTable = 0;
+    }
+
+    void toString() {
+      std::cout << "table size = " << m_tableSize << std::endl;
+      std::cout << "m_pTable = " << m_pTable << std::endl;
+      std::cout << "table:" << std::endl;
+      for(int i = 0; i < m_tableSize; ++i) {
+        std::cout << m_pTable[i] << std::endl;
+      }
     }
 
     /**
     Функция добавления элемента в Хеш-таблицу. Возвращает false, если элемент уже есть и true, если элемент добавлен.
     */
-    bool add(T* pElement)
-    {
+    bool add(T* pElement) {
+      unsigned int key;
+      leaf* to_next = 0;
+
+      // Проверим, есть ли элемент, заодно посчитаем key
+      leaf* had_leaf = findLeaf(pElement, key);
+      if(had_leaf != 0){
+        return false;
+      }
+
+      if(m_pTable[key] != 0) {
+        to_next = m_pTable[key];
+      }
+
+      m_pTable[key] = m_Memory.newObject();
+      // возможно, ошибка всё ещё здесь
+      leaf to_put;
+      to_put.pnext = to_next; // возможно это 0
+      to_put.pData = pElement;
+      *m_pTable[key] = to_put;
+      return true;
     }
     /**
     Функция обновления элемента в Хеш-таблице. Обновляет, если элемент уже есть, добавляет, если элемента еще нет.
@@ -105,6 +138,30 @@ namespace lab618
     */
     bool remove(const T& element)
     {
+      unsigned int key;
+      leaf* where_it = findLeaf(&element, key);
+      if(where_it == 0) {
+        return false;
+      }
+
+      // Нужен предыдущий элемент. Т. к. список односвязный, придётся дойти.
+      leaf* cur_leaf = m_pTable[key];
+      leaf* prev = 0;
+      while(cur_leaf != where_it) {
+        prev = cur_leaf;
+        cur_leaf = cur_leaf->pnext;
+      }
+
+      if(prev == 0) {
+        // Удаляем голову
+        m_pTable[key] = where_it->pnext;
+      } else {
+        // prev != 0
+        prev->pnext = where_it->pnext;
+      }
+
+      m_Memory.deleteObject(where_it);
+      return true;
     }
 
     /**
@@ -112,6 +169,19 @@ namespace lab618
     */
     void clear()
     {
+      leaf* cur_leaf;
+      leaf* next_leaf;
+      for(int i = 0; i < m_tableSize; ++i){
+        if(m_pTable[i] != 0) {
+          cur_leaf = m_pTable[i];
+          while (cur_leaf != 0) {
+            next_leaf = cur_leaf->pnext;
+            m_Memory.deleteObject(cur_leaf);
+            cur_leaf = next_leaf;
+          }
+          m_pTable[i] = 0;
+        }
+      }
     }
   private:
     /**
@@ -124,8 +194,23 @@ namespace lab618
      3. Перебираем список значений и если нашли, то возвращаем его.
      4. Если ничего не нашли, то возвращаем null
     */
-    leaf *findLeaf(const T* pElement, unsigned int & idx)
-    {
+    leaf *findLeaf(const T* pElement, unsigned int & idx) {
+      //Индекс выставляется всегда
+
+      unsigned int cur_hash = HashFunc(pElement);
+      unsigned int key = cur_hash % m_tableSize;
+      idx = key;
+      if (m_pTable[key] != 0) {
+        leaf *cur_leaf = m_pTable[key];
+        while (cur_leaf != 0) {
+          if (Compare(cur_leaf->pData, pElement) == 0) {
+            return cur_leaf;
+          }
+          cur_leaf = cur_leaf->pnext;
+        }
+      } else {
+        return 0;
+      }
     }
 
     /**
