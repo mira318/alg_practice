@@ -1,6 +1,6 @@
 #include "hash.h"
 #include <iostream>
-#include <assert.h>
+#include <cassert>
 
 struct TestStruct
 {
@@ -193,11 +193,13 @@ int main(){
   testHashTableAddDelete(10, 10, 1000);
   testHashTableAddDelete(52, 7, 394);
   testHashTableAddDelete(666, 37, 10001);
+  testHashTableAddDelete(1, 1, 9999);
+
 
   testHashTableUpdateFind(1, 1, 10);
   testHashTableUpdateFind(10, 10, 1000);
   testHashTableUpdateFind(999, 17, 701);
-  testHashTableUpdateFind(3, 1, 9999);
+  testHashTableUpdateFind(1, 1, 9999);
   return 0;
 }
 

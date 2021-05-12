@@ -234,6 +234,7 @@ namespace lab618
           }
           cur_leaf = cur_leaf->pnext;
         }
+        return 0;
       } else {
         return 0;
       }
