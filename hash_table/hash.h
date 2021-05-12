@@ -97,25 +97,24 @@ namespace lab618
     Функция добавления элемента в Хеш-таблицу. Возвращает false, если элемент уже есть и true, если элемент добавлен.
     */
     bool add(T* pElement) {
-      unsigned int key;
+      unsigned int key_hashed;
       leaf* to_next = 0;
 
       // Проверим, есть ли элемент, заодно посчитаем key
-      leaf* had_leaf = findLeaf(pElement, key);
+      leaf* had_leaf = findLeaf(pElement, key_hashed);
       if(had_leaf != 0){
         return false;
       }
 
-      if(m_pTable[key] != 0) {
-        to_next = m_pTable[key];
+      if(m_pTable[key_hashed] != 0) {
+        to_next = m_pTable[key_hashed];
       }
 
-      m_pTable[key] = m_Memory.newObject();
-      // возможно, ошибка всё ещё здесь
+      m_pTable[key_hashed] = m_Memory.newObject();
       leaf to_put;
       to_put.pnext = to_next; // возможно это 0
       to_put.pData = pElement;
-      *m_pTable[key] = to_put;
+      *m_pTable[key_hashed] = to_put;
       return true;
     }
     /**
@@ -124,6 +123,26 @@ namespace lab618
     */
     bool update(T* pElement)
     {
+      unsigned int key_hashed;
+      leaf* find_it = findLeaf(pElement, key_hashed);
+      if(find_it == 0) {
+        // Тут происходит добавление, потомучто элемент не найден, и код сильно похож на код функции add
+        // Да, это копипаста. Я могла бы вызвать add, но тогда придётся 2 раза вызвать find_leaf, а значит
+        // 2 раза пройти по цепочке для key
+
+        leaf* to_next = 0;
+        if(m_pTable[key_hashed] != 0) {
+          to_next = m_pTable[key_hashed];
+        }
+        m_pTable[key_hashed] = m_Memory.newObject();
+        leaf to_put;
+        to_put.pData = pElement;
+        to_put.pnext = to_next; // возможно это 0
+        *m_pTable[key_hashed] = to_put;
+        return false;
+      }
+      find_it->pData = pElement;
+      return true;
     }
 
     /**
@@ -131,6 +150,13 @@ namespace lab618
     Обратите внимание, что для поиска используется частично заполненный объект, т.е. В нем должны быть заполнены поля на основе которых рассчитывается хеш.*/
     T* find(const T& pElement)
     {
+      unsigned int key_hashed;
+      leaf* find_it = findLeaf(&pElement, key_hashed);
+      if(find_it == 0) {
+        return 0;
+      } else {
+        return find_it->pData;
+      }
     }
 
     /**
@@ -138,14 +164,14 @@ namespace lab618
     */
     bool remove(const T& element)
     {
-      unsigned int key;
-      leaf* where_it = findLeaf(&element, key);
+      unsigned int key_hashed;
+      leaf* where_it = findLeaf(&element, key_hashed);
       if(where_it == 0) {
         return false;
       }
 
       // Нужен предыдущий элемент. Т. к. список односвязный, придётся дойти.
-      leaf* cur_leaf = m_pTable[key];
+      leaf* cur_leaf = m_pTable[key_hashed];
       leaf* prev = 0;
       while(cur_leaf != where_it) {
         prev = cur_leaf;
@@ -154,7 +180,7 @@ namespace lab618
 
       if(prev == 0) {
         // Удаляем голову
-        m_pTable[key] = where_it->pnext;
+        m_pTable[key_hashed] = where_it->pnext;
       } else {
         // prev != 0
         prev->pnext = where_it->pnext;
@@ -198,10 +224,10 @@ namespace lab618
       //Индекс выставляется всегда
 
       unsigned int cur_hash = HashFunc(pElement);
-      unsigned int key = cur_hash % m_tableSize;
-      idx = key;
-      if (m_pTable[key] != 0) {
-        leaf *cur_leaf = m_pTable[key];
+      unsigned int key_hashed = cur_hash % m_tableSize;
+      idx = key_hashed;
+      if (m_pTable[key_hashed] != 0) {
+        leaf *cur_leaf = m_pTable[key_hashed];
         while (cur_leaf != 0) {
           if (Compare(cur_leaf->pData, pElement) == 0) {
             return cur_leaf;
